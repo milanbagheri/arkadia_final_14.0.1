@@ -1,0 +1,8 @@
+'use strict';
+const assert=require('assert');const fs=require('fs');const os=require('os');const path=require('path');
+const {saveRooms,loadRooms}=require('../lib/room-store');const {createWorld}=require('../lib/turn-engine');
+const file=path.join(os.tmpdir(),`arcadia-store-${process.pid}.json`);
+const countries=Array.from({length:258},(_,i)=>({owner:i,army:100,industry:10,cash:100,stance:.5,fatigue:0}));
+const engine=createWorld(countries);engine.turn=7;engine.pending[2]={type:'pass'};engine.relations[2][9]=77;engine.wars.push({attacker:2,defender:9,active:true,startedTurn:7});engine.treaties.push({a:2,b:9,type:'trade',active:true,turn:7});
+const room={code:'ABC234',created:1,updated:2,players:[{id:'p1',name:'Host',country:0,ready:true,host:true,tokenHash:'hash',ws:null}],game:{state:{version:3},revision:4,turn:7,playerStates:new Map([['p1',{player:0}]]),playerRevisions:new Map([['p1',2]]),playerLastActionAt:new Map(),worldCountries:{'0':countries[0]},activeCountries:[0,1,2,3],engine}};
+saveRooms(new Map([[room.code,room]]),file);const loaded=loadRooms(createWorld,file);assert.equal(loaded.size,1);const restored=loaded.get('ABC234');assert.equal(restored.game.turn,7);assert.equal(restored.game.engine.turn,7);assert.deepEqual(restored.game.engine.pending['2'],{type:'pass'});assert.equal(restored.players[0].ws,null);assert.equal(restored.game.playerRevisions.get('p1'),2);assert.equal(restored.game.engine.relations[2][9],77);assert.equal(restored.game.engine.wars[0].active,true);assert.equal(restored.game.engine.treaties[0].type,'trade');fs.unlinkSync(file);console.log('Stage 12 persistence/recovery tests passed.');

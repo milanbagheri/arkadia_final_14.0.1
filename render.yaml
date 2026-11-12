@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: arcadia-online
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    disk:
+      name: arcadia-room-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: ROOM_STORE_FILE
+        value: /var/data/rooms.json
